@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <title>Image Overlay Example</title>
+      <link rel = "stylesheet" href = "http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css"/>
+      <script src = "http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+           <style>
+      #map {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 100vh;
+        width: 100vw;
+        z-index: 1;
+      }
+
+      .leaflet-image-layer {
+        z-index: 2;
+      }
+
+    </style>
+   </head>
+
+   <body>
+      <div id = "map"></div>
+      <script>
+         // Creating map options
+         // var mapOptions = {
+         //    center: [17.342761, 78.552432],
+         //    zoom: 8
+         // }
+         var map = L.map('map', {
+              minZoom: 2
+            }).setView([41.188806, 28.980162], 10);
+        var osmLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19,
+            attribution: 'Map data © <a href="https://openstreetmap.org">OpenStreetMap</a> contributors'
+        })
+
+        // Add only the selected layer back to the map
+        var selectedLayer = osmLayer
+        selectedLayer.addTo(map);
+
+
+         // Creating Image overlay
+         var imageUrl = '/static/me-fotor-bg-remover-2023042213955.png';
+         var latLngBounds = [[41.225270033, 28.749522247], [41.199728916, 28.775469364]];
+         var overlay = L.imageOverlay(imageUrl, latLngBounds);
+         overlay.addTo(map);
+      </script>
+   </body>
+
+</html>
