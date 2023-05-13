@@ -425,8 +425,7 @@
             'Osm': osmLayer
         }).addTo(map);
 
-        // var tiff_img = L.imageOverlay('C:\\Users\\BURAK\\Desktop\\solar-map\\static\\istanbul_F21C01D_wgs.tif', [[28,749522247, 41,225270033], [28,775469364, 41,199728916]]);
-        // tiff_img.addTo(map);
+
         // define the suitabilityLayer variable outside of the callback function
         var suitabilityLayer;
 
@@ -845,7 +844,7 @@
                 edit: false
             },
             draw: {
-                polygon: true,
+                polygon: false,
                 circle: false,
                 marker: {
                     icon: new L.Icon.Default(),
