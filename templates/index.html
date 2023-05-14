@@ -21,9 +21,9 @@
               z-index: 1;
             }
 
-            .leaflet-image-layer {
-              z-index: 2;
-            }
+            /*.leaflet-image-layer {*/
+            /*  z-index: 2;*/
+            /*}*/
 
       </style>
    </head>
@@ -70,19 +70,61 @@
            }
          });
          map.addControl(drawControl);
-
+         var locationValue;
+         // Initialize array to store previous markers and popups
+            var markers = [];
          map.on('draw:created', function (e) {
            var layer = e.layer;
            drawnItems.addLayer(layer);
 
             var type = e.layerType,
                layer = e.layer;
-            if (type === 'marker') {
-               // Do something with the marker here, e.g. send it to the server
-                var latlng = layer.getLatLng();
-                var locationValue = prompt("Please enter the location value:", "");
 
-                console.log(layer.toGeoJSON());
+            if (type === 'polygon') {
+                // Do something with the polygon here, e.g. send it to the server
+                var geojson = layer.toGeoJSON();
+                locationValue = prompt("Please enter the location value:", "");
+                console.log(geojson);
+                $.ajax({
+                  url: '/save-polygons',
+                  type: 'POST',
+                  data: JSON.stringify({polygons: geojson}),
+                  contentType: 'application/json',
+                  dataType: 'json',
+                  success: function(response) {
+                    console.log("success_return_log", response);
+                    var addedLayer = L.geoJSON(response).addTo(map);
+
+                      console.log("aloo: ", response['geometry']['rgb_mean_value'])
+                        // Add the properties to the marker popup
+                        var popup = layer.bindPopup('Location: ' + locationValue + '<br>RGB_Mean: '+ response['geometry']['rgb_mean_value']  , {once: true});
+                        popup.openPopup();
+                      // Add marker and popup to the array
+                      // Create a new marker object and store a reference to it
+                      var marker = L.marker(layer.getBounds().getCenter());
+                      markers.push(marker);
+
+                      // When the marker is clicked, open the popup again
+                      marker.on('click', function(e) {
+                        popup.openPopup();
+                      });
+
+                      // Add the marker to the map
+                      marker.addTo(map);
+
+                      // Fit the map to all of the markers
+                      fitMapToMarkers(markers);
+
+                  },
+                  error: function(error) {
+                    console.log("fail_return_log", error);
+                  }
+                });
+              }
+            else if (type === 'marker') {
+                // Do something with the marker here, e.g. send it to the server
+                locationValue = prompt("Please enter the location value:", "");
+
                 $.ajax({
                     url: '/save-points',
                     type: 'POST',
@@ -91,23 +133,50 @@
                     dataType: 'json',
                     success: function(response) {
                         console.log("success_return_log", response);
-                        addedLayer = L.geoJSON(response).addTo(map);
-                        addedLayers.push(addedLayer);
-
+                        var addedLayer = L.geoJSON(response).addTo(map);
+                        console.log('layer:', layer);
+                        console.log('locationValue:', locationValue);
                         // Add the properties to the marker popup
-                        layer.bindPopup('Location: ' + locationValue + '<br>Latitude: ' + latlng.lat.toFixed(6) +
-                            '<br>Longitude: ' + latlng.lng.toFixed(6))
+                                // Add the properties to the marker popup
+                        var popup = layer.bindPopup('Location: ' + locationValue + '<br>Red: '+ response['geometry']['red'] + '<br>Blue: '+ response['geometry']['blue'] + '<br>Green: '+ response['geometry']['green']   , {once: true});
+                        popup.openPopup();
 
+                        // Add marker and popup to the array
+                          // Create a new marker object and store a reference to it
+                          var marker = L.marker(layer.getLatLng());
+                          markers.push(marker);
+
+                          // When the marker is clicked, open the popup again
+                            marker.on('click', function(e) {
+                              popup.openPopup();
+                            });
+
+                          // Add the marker to the map
+                          marker.addTo(map);
+
+                          // Fit the map to all of the markers
+                          fitMapToMarkers(markers);
+                        // layer.openPopup();
                     },
                     error: function(error) {
                         console.log("fail_return_log", error);
                     }
                 });
-                // console.log("drawnItems_log", drawnItems.toGeoJSON()); // log the GeoJSON data
             }
 
 
          });
+
+         function fitMapToMarkers(markers) {
+          var bounds = new L.LatLngBounds();
+
+          for (var i = 0; i < markers.length; i++) {
+            bounds.extend(markers[i].getLatLng());
+          }
+
+          map.fitBounds(bounds);
+        }
+
 
       </script>
    </body>
